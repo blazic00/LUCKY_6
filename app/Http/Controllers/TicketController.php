@@ -30,7 +30,7 @@ class TicketController extends Controller
 
         // Deduct 1 KM from the user's balance
         if ($user->balance < 1) {
-            return response()->json(['message' => 'Insufficient balance']);
+            return response()->json(['error' => 'Insufficient balance'], 403);
         }
 
         $user_id = Auth::guard('user')->id();

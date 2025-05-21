@@ -22,7 +22,6 @@ class GameServer implements Observer
         $this->server = new Server($this->config['server_host'], $this->config['server_port']);
         $this->gameManager = new GameManager();
         $this->gameManager->attach($this);
-
         $this->setupHandlers();
     }
 
@@ -35,22 +34,15 @@ class GameServer implements Observer
     private function setupHandlers()
     {
         $this->server->on('open', function ($server, $request) {
-            // Parse the query string from the request URL
             parse_str($request->server['query_string'], $queryParams);
-
-            // Extract user_id if present
             $userId = $queryParams['user_id'] ?? null;
 
             if ($userId !== null) {
-                // Store user_id mapped to the client's fd
                 $this->clients[$request->fd] = [
                     'user_id' => $userId,
                     'connected_at' => time()
                 ];
-
-                // Add mapping: user_id => fd
                 $this->userFdMap[$userId] = $request->fd;
-
 
                 echo "Connection opened: fd={$request->fd}, user_id={$userId}\n";
             } else {
@@ -71,9 +63,8 @@ class GameServer implements Observer
         });
 
 
-        $roundTimer = $this->config['round_timer'];
 
-        //Start round every interval //TO DO hard coded
+        $roundTimer = $this->config['round_timer'];
         Swoole\Timer::tick($roundTimer, function () {
             Swoole\Coroutine::create(function () {
                 $this->gameManager->run();
@@ -84,10 +75,6 @@ class GameServer implements Observer
 
     public function update($payload)
     {
-
-            // This method will be triggered when GameManager calls notify()
-            //echo "GameManager Notification: ". $payload['event'] . "\n";
-
             switch ($payload['event']) {
                 case 'ticket_results':
                     $tickets = $payload['data'];

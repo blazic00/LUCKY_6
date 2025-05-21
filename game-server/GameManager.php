@@ -36,19 +36,47 @@ class GameManager
 
     public function run()
     {
+        $roundId = $this->startNewRound();
+        $drawNumbers = $this->executeNumberDraw();
+        $this->processRound($roundId, $drawNumbers);
+    }
+
+    private function executeNumberDraw(){
+        //Draw numbers
+        $numbers = range(1, 48);
+        shuffle($numbers);
+        $drawNumbers = array_slice($numbers, 0, 30);
+
+        $usleepTime = $this->config['usleep_time'];
+
+        $reported_numbers = [];
+        for($i = 0; $i < count($drawNumbers); $i++) {
+            $reported_numbers[$i] = $drawNumbers[$i];
+            //echo "Drawing number: $number\n";
+            $this->notify('number_drawn',['numbers' => $reported_numbers]);
+            //TO DO
+            // Non-blocking sleep
+            Swoole\Coroutine::sleep($usleepTime / 1_000_000);
+        }
+        return $drawNumbers;
+    }
+
+    private function processRound($roundId, $drawNumbers){
+        $this->gameDao->endRound($roundId, $drawNumbers);
+        $this->notify("round_end", ['roundId' => $roundId]);
+
+        $ticketsProcessed = $this->processTickets($roundId, $drawNumbers);
+        $this->notify("ticket_results",$ticketsProcessed);
+    }
+
+    private function startNewRound(){
         //Ensure there is 1 pending round
         $pendingRoundsCount = $this->gameDao->countPendingRounds();
         if ($pendingRoundsCount == 0) {
             $newRoundId = $this->gameDao->createNewRound();
-            echo "Created new pending round with ID: " . $newRoundId . "\n";
-        } else {
-            echo "Pending round already exists.\n";
         }
-
-
         //Get pending round
         $pendingRound = $this->gameDao->getPendingRound();
-
 
         $roundId = $pendingRound['id'];
 
@@ -57,37 +85,8 @@ class GameManager
         $this->notify('new_round',['roundId' => $roundId]);
         //Prepare game_round for next round
         $this->gameDao->createNewRound();
-        //
 
-        //$this->drawNumbers($server, $clients, $roundId);
-
-
-        //Draw numbers
-        $numbers = range(1, 48);
-        shuffle($numbers);
-        $drawNumbers = array_slice($numbers, 0, 30);
-
-        //
-        $usleepTime = $this->config['usleep_time'];
-
-        $reported_numbers = [];
-        for($i = 0; $i < count($drawNumbers); $i++) {
-           $reported_numbers[$i] = $drawNumbers[$i];
-           //echo "Drawing number: $number\n";
-           $this->notify('number_drawn',['numbers' => $reported_numbers]);
-           //TO DO
-            // Non-blocking sleep
-            Swoole\Coroutine::sleep($usleepTime / 1_000_000);
-       }
-
-       $this->gameDao->endRound($roundId, $drawNumbers);
-       $this->notify("round_end", ['roundId' => $roundId]);
-
-       $ticketsProcessed = $this->processTickets($roundId, $drawNumbers);
-       $this->notify("ticket_results",$ticketsProcessed);
-
-
-
+        return $roundId;
     }
 
     private function processTickets($roundId, $drawNumbers){

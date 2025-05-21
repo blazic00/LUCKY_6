@@ -105,7 +105,6 @@
                 drawnNumbers = data.data.numbers;
                 updateNumberGrid();
 
-            //addNotification(`Number drawn: ${data.data.number}`);
         }
         else if (data.event === "round_end") {
             addNotification(`Round has ended! ROUND ID = ${data.data.roundId}`);
@@ -151,8 +150,8 @@
                 console.log("Ticket created:", result);
                 addNotification("Ticket created successfully!");
             } else {
-                console.error("Ticket creation failed:", result);
-                addNotification(`Error: ${result.message}`);
+                console.error("Ticket creation failed:", result.error);
+                addNotification(`Error: ${result.error}`);
             }
         } catch (error) {
             console.error("Error creating ticket:", error);
