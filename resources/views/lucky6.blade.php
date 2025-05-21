@@ -61,13 +61,20 @@
 <div id="notifications"></div>
 
 <script>
+    const wsServerUrl = `{{ config('app.websocket_server') }}`;
+
     @if(Auth::check())
     const userId = {{ Auth::id() }};
-    let ws = new WebSocket(`ws://localhost:9502?user_id=${userId}`);
+    let ws = new WebSocket(`${wsServerUrl}?user_id=${userId}`);
+    ws.onopen = () => addNotification("Connected to Game Server.");
+    ws.onerror = (err) => addNotification("WebSocket error: " + err.message);
+    ws.onclose = () => addNotification("Disconnected from WebSocket.");
     @else
     const userId = null;
     console.warn("User not authenticated, WebSocket disabled.");
+    let ws = null;
     @endif
+
     let drawnNumbers = [];
 
     const addNotification = message => {
