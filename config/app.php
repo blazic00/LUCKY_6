@@ -2,7 +2,7 @@
 
 return [
 
-    'websocket_server' => env('WEBSOCKET_SERVER', 'ws://192.168.0.32:9502'),
+    'websocket_server' => env('WEBSOCKET_SERVER', 'ws://localhost:9502'),
     /*
     |--------------------------------------------------------------------------
     | Application Name

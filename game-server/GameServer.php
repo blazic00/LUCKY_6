@@ -63,13 +63,20 @@ class GameServer implements Observer
         });
 
 
-
+        // Start game once after server starts
+        $this->server->on('start', function ($server) {
+            // Run the game once immediately in a coroutine
+            Swoole\Coroutine::create(function () {
+                $this->gameManager->run();
+            });
+        });
         $roundTimer = $this->config['round_timer'];
         Swoole\Timer::tick($roundTimer, function () {
             Swoole\Coroutine::create(function () {
                 $this->gameManager->run();
             });
         });
+
 
     }
 

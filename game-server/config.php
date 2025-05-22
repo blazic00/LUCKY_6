@@ -7,7 +7,7 @@ return [
     'db_name' => 'lucky_6',
     'db_user' => 'laravel',
     'db_password' => 'password',
-    'round_timer'=> 30000,
+    'round_timer'=> 300000,
     'usleep_time' => 600000,
     'payout_per_hit'=>1,
     'payout_threshold'=>3
